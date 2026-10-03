@@ -37,3 +37,12 @@ Six tools matching capabilities 1-6 in the doc, plus `list_tts_voices`.
 - REST STT clips are limited to ~60 s.
 - Gnani's "DTMF Collection" feature is documented as *collecting* keypresses from callers. Sending
   tones into a bank's IVR may need a different Gnani/telephony capability - verify before relying on navigate_ivr.
+
+## Deploy on Render (HTTP)
+- Build command: `pip install -r requirements.txt`
+- Start command: `uvicorn server:app --host 0.0.0.0 --port $PORT`
+- Health check path: `/health`
+- Environment variables: everything in `.env.example`, plus `MCP_AUTH_TOKEN` (any long random string).
+- MCP URL to give your client: `https://<service>.onrender.com/mcp` with header `Authorization: Bearer <MCP_AUTH_TOKEN>`.
+- Without `MCP_AUTH_TOKEN` anyone with the URL can place calls and spend your Gnani credits, so always set it.
+- `GNANI_AUDIO_OUT_DIR` files are on Render's ephemeral disk; fetch/serve them promptly.

@@ -57,7 +57,7 @@ STT_EXTS = {".wav", ".mp3", ".flac", ".ogg", ".m4a", ".aac"}
 TTS_MODELS = {"timbre-v2.0", "timbre-v2.5"}
 TTS_V20_VOICES = {"Pranav", "Kaveri", "Shubhra", "Deepak"}
 
-mcp = FastMCP("gnani")
+mcp = FastMCP("gnani", host="0.0.0.0", stateless_http=True)
 
 
 # --------------------------------------------------------------------------- helpers
@@ -396,5 +396,37 @@ async def pull_case_status_into_call(case_id: str) -> dict[str, Any]:
         return {"ok": False, "degraded": True, "error_code": "NETWORK", "error": str(ex)}
 
 
+# --------------------------------------------------------------------------- HTTP app (Render / any host)
+# Run:  uvicorn server:app --host 0.0.0.0 --port $PORT
+# MCP endpoint:  https://<your-service>.onrender.com/mcp
+# Set MCP_AUTH_TOKEN so only your clients can use it (this server can place calls and spend credits).
+MCP_AUTH_TOKEN = os.getenv("MCP_AUTH_TOKEN", "")
+
+
+class _Guard:
+    """Bearer-token check + /health endpoint in front of the MCP app."""
+
+    def __init__(self, inner):
+        self.inner = inner
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http":
+            if scope["path"] == "/health":
+                await send({"type": "http.response.start", "status": 200,
+                            "headers": [(b"content-type", b"text/plain")]})
+                await send({"type": "http.response.body", "body": b"ok"})
+                return
+            if MCP_AUTH_TOKEN:
+                hdrs = dict(scope["headers"])
+                if hdrs.get(b"authorization", b"").decode() != f"Bearer {MCP_AUTH_TOKEN}":
+                    await send({"type": "http.response.start", "status": 401,
+                                "headers": [(b"content-type", b"text/plain")]})
+                    await send({"type": "http.response.body", "body": b"unauthorized"})
+                    return
+        await self.inner(scope, receive, send)
+
+
+app = _Guard(mcp.streamable_http_app())
+
 if __name__ == "__main__":
-    mcp.run()  # stdio transport
+    mcp.run()  # stdio transport (local use, e.g. Claude Desktop)
