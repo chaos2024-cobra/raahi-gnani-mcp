@@ -17,6 +17,10 @@ DEFAULT_PLATFORM_AUTH_HEADER = "x-api-key"
 LOOPBACK_HOSTS = ("127.0.0.1:*", "localhost:*", "[::1]:*")
 LOOPBACK_ORIGINS = ("http://127.0.0.1:*", "http://localhost:*", "http://[::1]:*")
 
+RENDER_HOST = "raahi-gnani-mcp-1.onrender.com"
+RENDER_HOSTS = (RENDER_HOST, f"{RENDER_HOST}:*")
+RENDER_ORIGINS = (f"https://{RENDER_HOST}",)
+
 
 def _get(env: Mapping[str, str], key: str, default: str = "") -> str:
     value = env.get(key)
@@ -139,8 +143,8 @@ class Settings:
 
         if not self.dns_rebinding_protection:
             return TransportSecuritySettings(enable_dns_rebinding_protection=False)
-        hosts = list(self.allowed_hosts) or list(LOOPBACK_HOSTS)
-        origins = list(self.allowed_origins) or list(LOOPBACK_ORIGINS)
+        hosts = list(self.allowed_hosts) or [*LOOPBACK_HOSTS, *RENDER_HOSTS]
+        origins = list(self.allowed_origins) or [*LOOPBACK_ORIGINS, *RENDER_ORIGINS]
         return TransportSecuritySettings(
             enable_dns_rebinding_protection=True,
             allowed_hosts=hosts,

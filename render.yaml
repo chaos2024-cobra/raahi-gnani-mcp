@@ -17,7 +17,5 @@ services:
         sync: false
       - key: GNANI_CASE_STATUS_URL
         sync: false
-      - key: MCP_ENABLE_DNS_REBINDING_PROTECTION
-        value: "false"
       - key: LOG_LEVEL
         value: INFO

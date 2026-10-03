@@ -7,7 +7,7 @@ import time
 import urllib.request
 from pathlib import Path
 
-import httpx
+import httpx2 as httpx
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]

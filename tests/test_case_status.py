@@ -1,4 +1,4 @@
-import httpx
+import httpx2 as httpx
 
 from src.errors import ErrorCategory
 from src.gnani_tools import pull_case_status_into_call

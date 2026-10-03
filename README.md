@@ -186,8 +186,8 @@ strictly required.
 | `GNANI_MAX_TTS_TEXT_CHARS` | `5000` | Max TTS text length |
 | `GNANI_OUTCOME_POLL_MAX_ATTEMPTS` | `3` | Bounded analytics polling attempts |
 | `GNANI_OUTCOME_POLL_INTERVAL_SECONDS` | `1.0` | Delay between polls |
-| `MCP_ENABLE_DNS_REBINDING_PROTECTION` | `true` | Transport security toggle (`false` in render.yaml) |
-| `MCP_ALLOWED_HOSTS` / `MCP_ALLOWED_ORIGINS` | (empty = loopback) | Host/origin allowlists when protection is on |
+| `MCP_ENABLE_DNS_REBINDING_PROTECTION` | `true` | Transport security toggle (keep `true` in production) |
+| `MCP_ALLOWED_HOSTS` / `MCP_ALLOWED_ORIGINS` | (loopback + Render host) | Extra host/origin allowlist entries when protection is on |
 | `LOG_LEVEL` | `INFO` | Log level for the `raahi.gnani` logger |
 
 Live-only test toggle: `RUN_LIVE_GNANI_TESTS=true` (never set in CI; live tests are skipped by
@@ -270,8 +270,7 @@ No live Gnani account is required for the normal suite.
 - `startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT`
 - `healthCheckPath: /health`
 - env vars: `GNANI_API_KEY` and `GNANI_BOT_ID` (sync: false, set in the dashboard),
-  `GNANI_CALL_ENVIRONMENT=development`, `GNANI_DTMF_URL`, `GNANI_CASE_STATUS_URL`,
-  `MCP_ENABLE_DNS_REBINDING_PROTECTION=false`, `LOG_LEVEL=INFO`
+  `GNANI_CALL_ENVIRONMENT=development`, `GNANI_DTMF_URL`, `GNANI_CASE_STATUS_URL`, `LOG_LEVEL=INFO`
 
 Steps:
 
@@ -282,9 +281,10 @@ Steps:
 4. Deploy. Render exposes the app on `0.0.0.0:$PORT` and probes `/health`.
 
 Note on transport security: the MCP SDK rejects requests whose Host header is not allowlisted when
-DNS-rebinding protection is enabled. On Render the public hostname would be rejected, so
-`render.yaml` sets `MCP_ENABLE_DNS_REBINDING_PROTECTION=false`. Alternatively keep protection on
-and set `MCP_ALLOWED_HOSTS=<your-service>.onrender.com`. Never disable protection when exposing
+DNS-rebinding protection is enabled. The allowlist built in `src/config.py` already contains the
+deployed Render host `raahi-gnani-mcp-1.onrender.com` (bare and `:*`) plus its `https` origin, so
+protection stays enabled in production instead of being turned off. Add further entries with
+`MCP_ALLOWED_HOSTS` / `MCP_ALLOWED_ORIGINS`. Never disable protection when exposing
 unauthenticated admin routes; this server only exposes `/health`, `/mcp`, and `/case-status`.
 
 ## 9. MCP endpoint
