@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: gnani-mcp
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python server.py
+    envVars:
+      - key: GNANI_API_KEY
+        sync: false
