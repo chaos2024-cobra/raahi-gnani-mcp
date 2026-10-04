@@ -1,9 +1,21 @@
 services:
   - type: web
-    name: gnani-mcp
-    runtime: python
+    name: raahi-gnani-mcp
+    runtime: python-3.12
+    plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: python server.py
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
     envVars:
       - key: GNANI_API_KEY
         sync: false
+      - key: GNANI_BOT_ID
+        sync: false
+      - key: GNANI_CALL_ENVIRONMENT
+        value: development
+      - key: GNANI_DTMF_URL
+        sync: false
+      - key: GNANI_CASE_STATUS_URL
+        sync: false
+      - key: LOG_LEVEL
+        value: INFO

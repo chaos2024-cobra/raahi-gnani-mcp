@@ -1,4 +1,7 @@
-mcp[cli]<2
-httpx
-uvicorn
-starlette
+mcp>=2.3.0,<3
+httpx2>=2.5.0
+starlette>=0.45
+uvicorn>=0.30
+pydantic>=2.12
+pytest>=8.0
+pytest-asyncio>=0.24
